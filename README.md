@@ -1,0 +1,12 @@
+# kvantisoija_helvetista
+4 Channel Pitch CV Quantizer with Sample and Hold
+
+Comes in 2 flavors for Eurorack and similar with bipolar 12v or 15v supplies or for AE Modular and similar with unipolar 5v supplies. 
+Features can be mix and matched and of course modified to fit how you plan to use it. 
+
+The original code is set up to output 0-2v from the DAC which then must be scaled up via opamp and potentiometer.
+The 5v code is set up to output 0-5v directly from the DAC. You should measure your supply voltage precisely and update the code with the correct value.
+
+Whatever version you decide to use, check your DAC chip - the i2c address is set for MCP4728A4 by default and you may need to change it.
+
+If you have issues or questions message me on the AE Modular forum or Mod Wiggler both @haggardgrin and I'll do what I can do!
