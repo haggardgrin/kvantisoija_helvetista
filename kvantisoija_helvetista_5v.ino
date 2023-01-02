@@ -58,8 +58,8 @@ const int CurrentScale[18][24] = {
   {0, 42, 83, 125, 167, 209, 250, 292, 333, 375, 417, 459, 500, 542, 583, 625, 667, 709, 750, 792, 833, 875, 917, 959}, //24TET
   {0, 75, 93, 152, 170, 245, 263, 322, 340, 415, 433, 492, 510, 585, 660, 678, 737, 755, 830, 848, 907, 925}, //22 Shruti 
 };
-const int ScaleQTY = 18;  //update these and size of the array if you add more scales!
-const int MaxNoteQTY = 24;  //there's probably a way to automate that, shame the coder who made this sucks
+const int ScaleQTY = 17;  //update these and size of the array if you add more scales!
+const int MaxNoteQTY = 23;  //remember to subtract one!
 int ScaleID = 0; 
 
 int Mode = 0; //low = Free Running, high = Sample + Hold
@@ -194,7 +194,7 @@ void loop() {
   x = CVinA; 
   x %= 1000;  //remove octaves, leaving only notes
   X = x;
-  while (X > 0) {
+  while (X > (CurrentScale[ScaleID][1] / 2)) {
     i++;
     if (i > MaxNoteQTY) {
       i = 0;
@@ -251,7 +251,7 @@ void loop() {
   x = CVinB; 
   x %= 1000;  
   X = x;
-  while (X > 0) {
+  while (X > (CurrentScale[ScaleID][1] / 2)) {
     i++;
     if (i > MaxNoteQTY) {
       i = 0;
@@ -298,7 +298,7 @@ void loop() {
   x = CVinC; 
   x %= 1000;  
   X = x;
-  while (X > 0) {
+  while (X > (CurrentScale[ScaleID][1] / 2)) {
     i++;
     if (i > MaxNoteQTY) {
       i = 0;
@@ -345,7 +345,7 @@ void loop() {
   x = CVinD; 
   x %= 1000; 
   X = x;
-  while (X > 0) {
+  while (X > (CurrentScale[ScaleID][1] / 2)) {
     i++;
     if (i > MaxNoteQTY) {
       i = 0;
