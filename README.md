@@ -1,7 +1,7 @@
 # kvantisoija_helvetistä
 4 Channel Pitch CV Quantizer with Sample and Hold
 
-Comes in 2 flavors for Eurorack and similar with bipolar 12v or 15v supplies or for AE Modular and similar with unipolar 5v supplies. 
+Comes in 2 flavors for Eurorack and other synthesizers with bipolar 12v or 15v supplies or for AE Modular and similar with unipolar 5v supplies. 
 Features can be mix and matched and of course modified to fit how you plan to use it. 
 
 The original code is set up to output 0-2v from the DAC which then must be scaled up via opamp and potentiometer.
