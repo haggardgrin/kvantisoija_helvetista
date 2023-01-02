@@ -1,4 +1,4 @@
-# kvantisoija_helvetista
+# kvantisoija_helvetistä
 4 Channel Pitch CV Quantizer with Sample and Hold
 
 Comes in 2 flavors for Eurorack and similar with bipolar 12v or 15v supplies or for AE Modular and similar with unipolar 5v supplies. 
