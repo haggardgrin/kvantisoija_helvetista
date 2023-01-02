@@ -1,0 +1,39 @@
+Exact BOM will come down to which features and options you choose - 
+
+Eurorack Version:
+
+1x Arduino Nano
+1x MCP4728 DAC (IC chip or breakout board is fine)
+2x TL074 (or similar quad op amp)
+16x 1N4148 (or similar switching diode)
+4x 100k Trimpot
+8x 1k resistor
+11x 10k resistor
+4x 47k resistor
+13x 100k resistor
+4x  1m resistor
+6x 100nF ceramic capacitor
+3x 10uF electrolytic capacitor
+2x ferrite bead or 10r or skip
+1x SPDT (on)-off-(on)
+1x SPDT on-on
+1x Button or momentary switch
+12x i/o jacks
+Perfboard, wire, other hardware
+
+
+5v Version:
+
+1x Arduino Nano
+1x MCP4728 DAC (IC chip or breakout board is fine)
+4x 1k resistor
+2x 10k resistor
+12x 100k resistor
+6x 100nF ceramic capacitor
+3x 10uF electrolytic capacitor
+2x ferrite bead or 10r or skip
+1x SPDT (on)-off-(on)
+1x SPDT on-on
+1x Button or momentary switch
+12x i/o jacks
+Perfboard, wire, other hardware
