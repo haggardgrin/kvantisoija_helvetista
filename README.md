@@ -11,15 +11,4 @@ Whatever version you decide to use, check your DAC chip - the i2c address is set
 
 If you have issues or questions message me on the AE Modular forum or Mod Wiggler both @haggardgrin and I'll do what I can do!
 
-Default scales:
-Chromatic
-All diatonic modes
-Major/minor pentatonic
-Blues
-Harmonic minor
-Arabian
-Whole Tone
-Tritone
-Octaves and Fifths - for tuning or one stop drone shop
-24 TET
-22 Shruti - please message me if you're familiar with ragas I'd like to add some!
+Default scales: Chromatic, All diatonic modes, Major/minor pentatonic, Blues, Harmonic minor, Arabian, Whole Tone, Tritone, Octaves and Fifths (for tuning or one stop drone shop), 24 TET, 22 Shruti - please message me if you're familiar with ragas I'd like to add some!
