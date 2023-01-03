@@ -84,12 +84,10 @@ void setup() {
     delay(10); 
 //  if (!mcp.begin()) {   //Use this line if you have MCP4728
   if (!mcp.begin(0x64)) {   //Use this line if you have MCP4728A4
-    Serial.println("Failed to find MCP4728 chip");
     while (1) {
     delay(10);
    }
   }   
-  Serial.println("MCP4728 Found!");
 
   mcp.setChannelValue(MCP4728_CHANNEL_A, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
   mcp.setChannelValue(MCP4728_CHANNEL_B, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
@@ -105,32 +103,24 @@ void setup() {
   pinMode(TrigCPin, INPUT); //D3 TrigC
   pinMode(TrigDPin, INPUT); //D2 TrigD 
 
-  Serial.println("Movin and groovin");
 }
 
 void loop() {
-  Serial.println("From the top!");
   Scale00PinRead = digitalRead(Scale00Pin); 
-  Serial.print("Default Scale Request:");
   switch (Scale00PinRead)  {
     case LOW:
-      Serial.println("Nope!");
       break;
     case HIGH:
-      Serial.println("Yup!");
       ScaleID = 0;
       delay(150);
       break;
   }
 
   NextScalePinRead = digitalRead(NextScalePin);  
-  Serial.print("Next Scale Request:");
   switch (NextScalePinRead) {
     case LOW:
-      Serial.println("Nope!");
       break;  
     case HIGH:
-      Serial.println("Yup!");
       ScaleID++;
       if (ScaleID > ScaleQTY) {
         ScaleID = 0;
@@ -155,36 +145,25 @@ void loop() {
       break;
   }
 
-  Serial.print("Scale:");
-  Serial.println(ScaleID);  
-
   Mode = digitalRead(ModePin); 
-  Serial.print("Mode:");
   switch (Mode) {
     case LOW:
-      Serial.println("Free Running!");
       goto ProcessCVA;
     case HIGH:
-      Serial.println("Sample+Hold!");
       TrigA = digitalRead(TrigAPin); 
       switch (TrigA) {
         case LOW:
-          Serial.print("Didn't trigger!");
           goto ADone;
         case HIGH:
-          Serial.print("Triggered!");
           goto ProcessCVA;
       }
   }
       
-  ProcessCVA:   
-  Serial.println("Quantizing A!");  
+  ProcessCVA:    
   CVinA = analogRead(A0);
     if(CVinA > 1023) {CVinA = 1023; }
     if(CVinA < 0) {CVinA = 0; }
-  CVinA = map(CVinA, 0, 1023, 0, 4999); //convert 10 bit to mV
-  Serial.print("CVinA:");
-  Serial.println(CVinA);    
+  CVinA = map(CVinA, 0, 1023, 0, 4999); //convert 10 bit to mV  
   x = CVinA; 
   x %= 1000;  //remove octaves, leaving only notes
   X = x;
@@ -197,12 +176,8 @@ void loop() {
     }
     X = x; //dummy
     X -= CurrentScale[ScaleID][i]; //Subtract each scale note from input sequentially until result 0 or less
-    Serial.print("Dummy Check:");
-    Serial.println(X);  
   }
   ANote = CurrentScale[ScaleID][i]; //save correct note for later 
-  Serial.print("Q Note Found:");
-  Serial.println(i); 
   X = 0; //return variables for next channel
   i = 0;
   x = CVinA; 
@@ -210,14 +185,8 @@ void loop() {
   x = abs(x); 
   x *= 1000; //remove notes, leaving only octaves
   AOct = x;
-  Serial.print("Q Octave Found:");
-  Serial.println(AOct);  
   AmV = ANote + AOct;
-  Serial.print("Q A mV:");
-  Serial.println(AmV); 
   ADAC = map(AmV, 0, 4999, 0, 4095);
-  Serial.print("Q A DAC Value:");
-  Serial.println(ADAC); 
   mcp.setChannelValue(MCP4728_CHANNEL_A, ADAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
 
   ADone:
@@ -234,8 +203,7 @@ void loop() {
       }
   }
       
-  ProcessCVB:
-  Serial.println("Quantizing B!");    
+  ProcessCVB:   
   CVinB = analogRead(A1);
     if(CVinB > 1023) {CVinB = 1023; }
     if(CVinB < 0) {CVinB = 0; }
@@ -280,7 +248,6 @@ void loop() {
   }
       
   ProcessCVC:
-  Serial.println("Quantizing C!");    
   CVinC = analogRead(A2);
     if(CVinC > 1023) {CVinC = 1023; }
     if(CVinC < 0) {CVinC = 0; }
@@ -324,8 +291,7 @@ void loop() {
       }
   }
       
-  ProcessCVD:
-  Serial.println("Quantizing D!");    
+  ProcessCVD:  
   CVinD = analogRead(A3);
     if(CVinD > 1023) {CVinD = 1023; }
     if(CVinD < 0) {CVinD = 0; }
