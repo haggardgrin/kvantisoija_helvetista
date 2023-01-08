@@ -9,6 +9,7 @@ const float SupplyVoltage = 5.025;  //Measure your supply voltage precisely and 
 
 float vCor = 0; 
 
+int Channel = 0;
 int i = 0;
 int x = 0;
 int X = 0;
@@ -22,16 +23,6 @@ const int TrigAPin = 5;
 const int TrigBPin = 4;
 const int TrigCPin = 3;
 const int TrigDPin = 2;
-
-int CVinA = 0;
-int CVinB = 0;
-int CVinC = 0;
-int CVinD = 0;
-
-int TrigA = 0;
-int TrigB = 0;
-int TrigC = 0;
-int TrigD = 0;
 
 int Scale00PinRead = LOW;
 int NextScalePinRead = LOW;
@@ -58,28 +49,17 @@ const int CurrentScale[18][24] = {
   {0, 42, 83, 125, 167, 209, 250, 292, 333, 375, 417, 459, 500, 542, 583, 625, 667, 709, 750, 792, 833, 875, 917, 959}, //24TET
   {0, 75, 93, 152, 170, 245, 263, 322, 340, 415, 433, 492, 510, 585, 660, 678, 737, 755, 830, 848, 907, 925}, //22 Shruti 
 };
-const int ScaleQTY = 17;  //update these and size of the array if you add more scales!
-const int MaxNoteQTY = 23;  //remember to subtract one!
+int ScaleQTY = 17;  //update these and size of the array if you add more scales!
+int MaxNoteQTY = 23;  //remember to subtract one!
 int ScaleID = 0; 
 
 int Mode = 0; //low = Free Running, high = Sample + Hold
-
-int ANote = 0;
-int AOct = 0;
-int AmV = 0;
-int ADAC = 0;
-int BNote = 0;
-int BOct = 0;
-int BmV = 0;
-int BDAC = 0;
-int CNote = 0;
-int COct = 0;
-int CmV = 0;
-int CDAC = 0;
-int DNote = 0;
-int DOct = 0;
-int DmV = 0;
-int DDAC = 0;
+int CVin = 0;
+int Trig = 0;
+int Note = 0;
+int Oct = 0;
+int mV = 0;
+int DAC = 0;
 
 void setup() {
   Wire.begin();
@@ -88,15 +68,17 @@ void setup() {
     delay(10); 
 //  if (!mcp.begin()) {   //Use this line if you have MCP4728
   if (!mcp.begin(0x64)) {   //Use this line if you have MCP4728A4
+    Serial.println("Failed to find MCP4728 chip");
     while (1) {
     delay(10);
    }
   }   
+  Serial.println("MCP4728 Found!");
 
-  mcp.setChannelValue(MCP4728_CHANNEL_A, 0, MCP4728_VREF_VDD);
-  mcp.setChannelValue(MCP4728_CHANNEL_B, 0, MCP4728_VREF_VDD);
-  mcp.setChannelValue(MCP4728_CHANNEL_C, 0, MCP4728_VREF_VDD);
-  mcp.setChannelValue(MCP4728_CHANNEL_D, 0, MCP4728_VREF_VDD);
+  mcp.setChannelValue(MCP4728_CHANNEL_A, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
+  mcp.setChannelValue(MCP4728_CHANNEL_B, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
+  mcp.setChannelValue(MCP4728_CHANNEL_C, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
+  mcp.setChannelValue(MCP4728_CHANNEL_D, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
 
   pinMode(NextScalePin, INPUT); //D9 Next Scale 
   pinMode(PrevScalePin, INPUT); //D8 Prev Scale
@@ -108,241 +90,78 @@ void setup() {
   pinMode(TrigDPin, INPUT); //D2 TrigD 
 
   vCor = SupplyVoltage / 5;
-
 }
 
 void loop() {
   Scale00PinRead = digitalRead(Scale00Pin); 
-  switch (Scale00PinRead)  {
-    case LOW:
-      break;
-    case HIGH:
-      ScaleID = 0;
-      delay(150);
-      break;
+  if (Scale00PinRead == HIGH) {
+    ScaleID = 0;
+    delay(250);
   }
 
   NextScalePinRead = digitalRead(NextScalePin);  
-  switch (NextScalePinRead) {
-    case LOW:
-      break;  
-    case HIGH:
-      ScaleID++;
-      if (ScaleID > ScaleQTY) {
-        ScaleID = 0;
-      }
-      delay(150);
-      break;
+  if (NextScalePinRead == HIGH) {
+    ScaleID++;
+    if (ScaleID > ScaleQTY) { ScaleID = 0; }
+    delay(250);
   }
 
   PrevScalePinRead = digitalRead(PrevScalePin); 
-  switch (PrevScalePinRead) {
-    case LOW:
-      break;  
-    case HIGH:
+  if (PrevScalePinRead == HIGH) {
       ScaleID--;
-      if (ScaleID < 0) {
-        ScaleID = ScaleQTY;
-      }
-      delay(150);
-      break;
+      if (ScaleID < 0) {ScaleID = ScaleQTY; }
+      delay(250);
   }
 
-  Mode = digitalRead(ModePin); 
-  switch (Mode) {
-    case LOW:
-      goto ProcessCVA;
-    case HIGH:
-      TrigA = digitalRead(TrigAPin); 
-      switch (TrigA) {
-        case LOW:
-          goto ADone;
-        case HIGH:
-          goto ProcessCVA;
-      }
-  }
-      
-  ProcessCVA:   
-  CVinA = analogRead(A0);
-    if(CVinA > 1023) {CVinA = 1023; }
-    if(CVinA < 0) {CVinA = 0; }
-  CVinA = map(CVinA, 0, 1023, 0, 4999); //convert 10 bit to mV
-  x = CVinA; 
-  x %= 1000;  //remove octaves, leaving only notes
-  X = x;
-  while (X > (CurrentScale[ScaleID][1] / 2)) {
-    i++;
-    if (i > MaxNoteQTY) {
-      i = 0;
-      CVinA += 1000;
-      break;
+  Mode = digitalRead(ModePin);
+  if (Mode == HIGH) {
+    for (Channel = 0; Channel < 4; Channel++) {
+      if (Channel == 0 ) {Trig = digitalRead(TrigAPin); } 
+      if (Channel == 1 ) {Trig = digitalRead(TrigBPin); }
+      if (Channel == 2 ) {Trig = digitalRead(TrigCPin); }
+      if (Channel == 3 ) {Trig = digitalRead(TrigDPin); }
+      if (Trig == HIGH) {ProcessCV(Channel); }
     }
-    X = x; //dummy
-    X -= CurrentScale[ScaleID][i]; //Subtract each scale note from input sequentially until result 0 or less
   }
-  ANote = CurrentScale[ScaleID][i]; //save correct note for later 
-  X = 0; //return variables for next channel
-  i = 0;
-  x = CVinA; 
-  x /= 1000;
-  x = abs(x); 
-  x *= 1000; //remove notes, leaving only octaves
-  AOct = x;
-  AmV = ANote + AOct;
-  AmV *= vCor;
-  if(AmV > 4999) {AmV = 4999; }
-  ADAC = map(AmV, 0, 4999, 0, 4095);
-  mcp.setChannelValue(MCP4728_CHANNEL_A, ADAC, MCP4728_VREF_VDD);
-
-  ADone:
-  switch (Mode) {
-    case LOW:
-      goto ProcessCVB;
-    case HIGH:
-      TrigB = digitalRead(TrigBPin); 
-      switch (TrigB) {
-        case 0:
-          goto BDone;
-        case 1:
-          goto ProcessCVB;
-      }
-  }
-      
-  ProcessCVB:
-  CVinB = analogRead(A1);
-    if(CVinB > 1023) {CVinB = 1023; }
-    if(CVinB < 0) {CVinB = 0; }
-  CVinB = map(CVinB, 0, 1023, 0, 4999); 
-  x = CVinB; 
-  x %= 1000;  
-  X = x;
-  while (X > (CurrentScale[ScaleID][1] / 2)) {
-    i++;
-    if (i > MaxNoteQTY) {
-      i = 0;
-      CVinB +=1000;
-      break;
+  if (Mode == LOW) {
+    for (Channel = 0; Channel < 4; Channel++) {
+      ProcessCV(Channel);
     }
-    X = x; 
-    X -= CurrentScale[ScaleID][i]; 
   }
-  BNote = CurrentScale[ScaleID][i]; 
-  X = 0; 
-  i = 0;
-  x = CVinB; 
-  x /= 1000;
-  x = abs(x); 
-  x *= 1000; 
-  BOct = x; 
-  BmV = BNote + BOct;
-  BmV *= vCor;
-  if (BmV > 4999) {BmV = 4999; }
-  BDAC = map(BmV, 0, 4999, 0, 4095);
-  mcp.setChannelValue(MCP4728_CHANNEL_B, BDAC, MCP4728_VREF_VDD);
-
-  BDone:
-  switch (Mode) {
-    case LOW:
-      goto ProcessCVC;
-    case HIGH:
-      TrigC = digitalRead(TrigCPin); 
-      switch (TrigC) {
-        case LOW:
-          goto CDone;
-        case HIGH:
-          goto ProcessCVC;
-      }
-  }
-      
-  ProcessCVC:  
-  CVinC = analogRead(A2);
-    if(CVinC > 1023) {CVinC = 1023; }
-    if(CVinC < 0) {CVinC = 0; }
-  CVinC = map(CVinC, 0, 1023, 0, 4999); 
-  x = CVinC; 
-  x %= 1000;  
-  X = x;
-  while (X > (CurrentScale[ScaleID][1] / 2)) {
-    i++;
-    if (i > MaxNoteQTY) {
-      i = 0;
-      CVinC += 1000;
-      break;
-    }
-    X = x; 
-    X -= CurrentScale[ScaleID][i]; 
-  }
-  CNote = CurrentScale[ScaleID][i]; 
-  X = 0; 
-  i = 0;
-  x = CVinC; 
-  x /= 1000;
-  x = abs(x); 
-  x *= 1000; 
-  COct = x; 
-  CmV = CNote + COct;
-  CmV *= vCor;
-  if (CmV > 4999) {CmV = 4999; }
-  CDAC = map(CmV, 0, 4999, 0, 4095);
-  mcp.setChannelValue(MCP4728_CHANNEL_C, CDAC, MCP4728_VREF_VDD);
-
-  CDone:
-  switch (Mode) {
-    case LOW:
-      goto ProcessCVD;
-    case HIGH:
-      TrigD = digitalRead(TrigDPin); 
-      switch (TrigD) {
-        case 0:
-          goto DDone;
-        case 1:
-          goto ProcessCVD;
-      }
-  }
-      
-  ProcessCVD:
-  CVinD = analogRead(A3);
-    if(CVinD > 1023) {CVinD = 1023; }
-    if(CVinD < 0) {CVinD = 0; }
-  CVinD = map(CVinD, 0, 1023, 0, 4999);
-  x = CVinD; 
-  x %= 1000; 
-  X = x;
-  while (X > (CurrentScale[ScaleID][1] / 2)) {
-    i++;
-    if (i > MaxNoteQTY) {
-      i = 0;
-      CVinD += 1000;
-      break;
-    }
-    X = x; 
-    X -= CurrentScale[ScaleID][i]; 
-  }
-  DNote = CurrentScale[ScaleID][i]; 
-  X = 0; 
-  i = 0;
-  x = CVinD; 
-  x /= 1000;
-  x = abs(x); 
-  x *= 1000; 
-  DOct = x; 
-  DmV = DNote + DOct;
-  DmV *= vCor;
-  if (DmV > 4999) {DmV = 4999; }
-  DDAC = map(DmV, 0, 4999, 0, 4095);
-  mcp.setChannelValue(MCP4728_CHANNEL_D, DDAC, MCP4728_VREF_VDD);
-
-  DDone:
-
-  Serial.print("Output A:");
-  Serial.println(AmV);
-  Serial.print("Output B:");
-  Serial.println(BmV);
-  Serial.print("Output C:");
-  Serial.println(CmV);
-  Serial.print("Output D:");
-  Serial.println(DmV);
-
   delay(0);     // Whine without, damn black magic thingies
+}
 
-}    
+void ProcessCV(int Channel) {
+  if (Channel == 0) {CVin = analogRead(A0); }  
+  if (Channel == 1) {CVin = analogRead(A1); }
+  if (Channel == 2) {CVin = analogRead(A2); }
+  if (Channel == 3) {CVin = analogRead(A3); }
+  CVin = map(CVin, 0, 1023, 0, 4999); 
+  x = CVin; 
+  x %= 1000;  
+  X = x; 
+  i = 0; 
+  while (X > 10) { 
+    i++; 
+    if (i > MaxNoteQTY) { 
+      i = 0;
+      CVin += 1000; //not sure why this is necessary but it fixed a glitch...
+      break;
+    }
+    X = x; 
+    X -= CurrentScale[ScaleID][i]; 
+  }
+  Note = CurrentScale[ScaleID][i]; 
+  x = CVin; 
+  x /= 1000; 
+  x *= 1000; 
+  Oct = x; 
+  mV = Note + Oct; 
+  mV *= vCor;
+  if (mV > 4999) {mV = 4999; }
+  DAC = map(mV, 0, 4999, 0, 4095); 
+  if (Channel == 0) {mcp.setChannelValue(MCP4728_CHANNEL_A, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); } 
+  if (Channel == 1) {mcp.setChannelValue(MCP4728_CHANNEL_B, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); }
+  if (Channel == 2) {mcp.setChannelValue(MCP4728_CHANNEL_C, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); }
+  if (Channel == 3) {mcp.setChannelValue(MCP4728_CHANNEL_D, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); }
+}
