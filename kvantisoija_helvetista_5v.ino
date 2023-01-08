@@ -75,10 +75,10 @@ void setup() {
   }   
   Serial.println("MCP4728 Found!");
 
-  mcp.setChannelValue(MCP4728_CHANNEL_A, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
-  mcp.setChannelValue(MCP4728_CHANNEL_B, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
-  mcp.setChannelValue(MCP4728_CHANNEL_C, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
-  mcp.setChannelValue(MCP4728_CHANNEL_D, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
+  mcp.setChannelValue(MCP4728_CHANNEL_A, 0, MCP4728_VREF_VDD);
+  mcp.setChannelValue(MCP4728_CHANNEL_B, 0, MCP4728_VREF_VDD);
+  mcp.setChannelValue(MCP4728_CHANNEL_C, 0, MCP4728_VREF_VDD);
+  mcp.setChannelValue(MCP4728_CHANNEL_D, 0, MCP4728_VREF_VDD);
 
   pinMode(NextScalePin, INPUT); //D9 Next Scale 
   pinMode(PrevScalePin, INPUT); //D8 Prev Scale
@@ -160,8 +160,8 @@ void ProcessCV(int Channel) {
   mV *= vCor;
   if (mV > 4999) {mV = 4999; }
   DAC = map(mV, 0, 4999, 0, 4095); 
-  if (Channel == 0) {mcp.setChannelValue(MCP4728_CHANNEL_A, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); } 
-  if (Channel == 1) {mcp.setChannelValue(MCP4728_CHANNEL_B, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); }
-  if (Channel == 2) {mcp.setChannelValue(MCP4728_CHANNEL_C, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); }
-  if (Channel == 3) {mcp.setChannelValue(MCP4728_CHANNEL_D, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); }
+  if (Channel == 0) {mcp.setChannelValue(MCP4728_CHANNEL_A, DAC, MCP4728_VREF_VDD); } 
+  if (Channel == 1) {mcp.setChannelValue(MCP4728_CHANNEL_B, DAC, MCP4728_VREF_VDD); }
+  if (Channel == 2) {mcp.setChannelValue(MCP4728_CHANNEL_C, DAC, MCP4728_VREF_VDD); }
+  if (Channel == 3) {mcp.setChannelValue(MCP4728_CHANNEL_D, DAC, MCP4728_VREF_VDD); }
 }
