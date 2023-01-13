@@ -15,10 +15,9 @@ const int PrevScalePin = 8;
 const int Scale00Pin = 7;
 const int ModePin = 6;
 
-const int TrigAPin = 5;
-const int TrigBPin = 4;
-const int TrigCPin = 3;
-const int TrigDPin = 2;
+const int TrigPins[] = {5, 4, 3, 2};
+const int CVinPins[] = {A0, A1, A2, A3};
+const int MCPChannel[] = {MCP4728_CHANNEL_A, MCP4728_CHANNEL_B, MCP4728_CHANNEL_C, MCP4728_CHANNEL_D};
 
 int Scale00PinRead = LOW;
 int NextScalePinRead = LOW;
@@ -69,23 +68,15 @@ void setup() {
     delay(10);
    }
   }   
-  Serial.println("MCP4728 Found!");
 
-  mcp.setChannelValue(MCP4728_CHANNEL_A, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
-  mcp.setChannelValue(MCP4728_CHANNEL_B, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
-  mcp.setChannelValue(MCP4728_CHANNEL_C, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
-  mcp.setChannelValue(MCP4728_CHANNEL_D, 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
-
+  for (Channel = 0; Channel < 4; Channel++ ) {
+    mcp.setChannelValue(MCPChannel[Channel], 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
+    pinMode(TrigPins[Channel], INPUT);
+  }
   pinMode(NextScalePin, INPUT); //D9 Next Scale 
   pinMode(PrevScalePin, INPUT); //D8 Prev Scale
   pinMode(Scale00Pin, INPUT); //D7 Default Scale
   pinMode(ModePin, INPUT); //D6 Mode
-  pinMode(TrigAPin, INPUT); //D5 TrigA
-  pinMode(TrigBPin, INPUT); //D4 TrigB
-  pinMode(TrigCPin, INPUT); //D3 TrigC
-  pinMode(TrigDPin, INPUT); //D2 TrigD 
-
-  Serial.println("Movin and groovin");
 }
 
 void loop() {
@@ -112,10 +103,7 @@ void loop() {
   Mode = digitalRead(ModePin);
   if (Mode == HIGH) {
     for (Channel = 0; Channel < 4; Channel++) {
-      if (Channel == 0 ) {Trig = digitalRead(TrigAPin); } 
-      if (Channel == 1 ) {Trig = digitalRead(TrigBPin); }
-      if (Channel == 2 ) {Trig = digitalRead(TrigCPin); }
-      if (Channel == 3 ) {Trig = digitalRead(TrigDPin); }
+      Trig = digitalRead(TrigPins[Channel]);
       if (Trig == HIGH) {ProcessCV(Channel); }
     }
   }
@@ -128,10 +116,7 @@ void loop() {
 }
 
 void ProcessCV(int Channel) {
-  if (Channel == 0) {CVin = analogRead(A0); }  
-  if (Channel == 1) {CVin = analogRead(A1); }
-  if (Channel == 2) {CVin = analogRead(A2); }
-  if (Channel == 3) {CVin = analogRead(A3); }
+  CVin = analogRead(CVinPins[Channel]);
   CVin = map(CVin, 0, 1023, 0, 4999); 
   x = CVin; 
   x %= 1000;  
@@ -154,8 +139,5 @@ void ProcessCV(int Channel) {
   Oct = x; 
   mV = Note + Oct; 
   DAC = map(mV, 0, 4999, 0, 4095); 
-  if (Channel == 0) {mcp.setChannelValue(MCP4728_CHANNEL_A, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); } 
-  if (Channel == 1) {mcp.setChannelValue(MCP4728_CHANNEL_B, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); }
-  if (Channel == 2) {mcp.setChannelValue(MCP4728_CHANNEL_C, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); }
-  if (Channel == 3) {mcp.setChannelValue(MCP4728_CHANNEL_D, DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X); }
+  mcp.setChannelValue(MCPChannel[Channel], DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
 }
