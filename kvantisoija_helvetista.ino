@@ -119,25 +119,30 @@ void ProcessCV(int Channel) {
   CVin = analogRead(CVinPins[Channel]);
   CVin = map(CVin, 0, 1023, 0, 4999); 
   x = CVin; 
-  x %= 1000;  
-  X = x; 
-  i = 0; 
-  while (X > 10) { 
-    i++; 
-    if (i > MaxNoteQTY) { 
-      i = 0;
-      CVin += 1000; //not sure why this is necessary but it fixed a glitch...
-      break;
+  i = 0;
+  if (x < 20) {
+    mcp.setChannelValue(MCPChannel[Channel], 0, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
     }
+  if (x >= 20) {
+    x %= 1000;  
     X = x; 
-    X -= CurrentScale[ScaleID][i]; 
+    while (X > 1) { 
+      i++; 
+      if (i > MaxNoteQTY) { 
+        i = 0;
+        CVin += 1000; 
+        break;
+      }
+      X = x; 
+      X -= CurrentScale[ScaleID][i]; 
+    }
+    Note = CurrentScale[ScaleID][i]; 
+    x = CVin; 
+    x /= 1000; 
+    x *= 1000; 
+    Oct = x; 
+    mV = Note + Oct; 
+    DAC = map(mV, 0, 4999, 0, 4095); 
+    mcp.setChannelValue(MCPChannel[Channel], DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
   }
-  Note = CurrentScale[ScaleID][i]; 
-  x = CVin; 
-  x /= 1000; 
-  x *= 1000; 
-  Oct = x; 
-  mV = Note + Oct; 
-  DAC = map(mV, 0, 4999, 0, 4095); 
-  mcp.setChannelValue(MCPChannel[Channel], DAC, MCP4728_VREF_INTERNAL, MCP4728_GAIN_1X);
 }
