@@ -15,3 +15,5 @@ Default scales: Chromatic, All diatonic modes, Major/minor pentatonic, Blues, Ha
 
 
 Update 8 Jan '23 - Reworked code to look like 2nd year project instead of "look mom I coded a thing!" Some 200 lines of fat trimmed, big thanks joem and PexiTheBuilder and FlatulentGonad!
+
+Update 18 Jan '23 - Improved 0v hysteresis and fixed a silly mistake.
